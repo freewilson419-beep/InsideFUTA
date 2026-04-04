@@ -1,40 +1,53 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase' 
 import { Toaster } from './components/ui/sonner'
 
-// --- ADD THESE LINES HERE ---
+// Page Imports
 import LandingPage from './pages/LandingPage'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
-// ----------------------------
 
-// 1. IMPROVED Protected Route component
+// 1. Protected Route component
 function ProtectedRoute({ children, session }: { children: React.ReactNode, session: any }) {
-  if (session === undefined) return <div className="flex h-screen items-center justify-center bg-[#001f3f] text-white">Loading InsideFUTA...</div>
+  if (session === undefined) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#001f3f] text-white font-bold">
+        Verifying InsideFUTA Session...
+      </div>
+    )
+  }
   return session ? <>{children}</> : <Navigate to="/login" replace />
 }
 
-// ... the rest of your App() function stays exactly the same ...
-
 function App() {
-  const [session, setSession] = useState<any>(undefined) // undefined means "loading"
+  const [session, setSession] = useState<any>(undefined)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    // 2. REAL AUTH CHECK: Get current session from Supabase on load
+    // 2. Initial Session Check
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
+      // If we are already logged in and try to go to /login, push to dashboard
+      if (session && window.location.pathname === '/login') {
+        navigate('/dashboard', { replace: true })
+      }
     })
 
-    // 3. LISTEN: If the user logs in or out, update the app immediately
+    // 3. Auth Listener (This handles the redirect the moment you click Sign In)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
+      if (session) {
+        navigate('/dashboard', { replace: true })
+      } else {
+        navigate('/login', { replace: true })
+      }
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [navigate])
 
   return (
     <>
@@ -42,11 +55,12 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
-        {/* If already logged in, don't show login/signup pages, redirect to dashboard */}
-        <Route path="/login" element={session ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/signup" element={session ? <Navigate to="/dashboard" /> : <Signup />} />
+        
+        {/* Auth Routes - Redirect if session exists */}
+        <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/signup" element={session ? <Navigate to="/dashboard" replace /> : <Signup />} />
 
-        {/* Protected Routes - Pass the 'session' to them */}
+        {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={
@@ -56,7 +70,6 @@ function App() {
           }
         />
         
-        {/* ... Apply the same <ProtectedRoute session={session}> to ALL other protected routes ... */}
         <Route
           path="/profile"
           element={
