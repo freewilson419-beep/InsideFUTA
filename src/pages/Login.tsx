@@ -26,7 +26,7 @@ export default function Login() {
       const success = await login(email, password)
       if (success) {
         toast.success('Welcome back!')
-        navigate('/Dashboard')
+        navigate('/dashboard')
       } else {
         toast.error('Invalid credentials. Please try again.')
       }
