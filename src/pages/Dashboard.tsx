@@ -1,3 +1,4 @@
+// 1. ALL imports must be here at the top!
 import { Link } from 'react-router-dom'
 import { useStore } from '@/store'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -21,10 +22,10 @@ import {
 import { format, parseISO, isBefore, addDays } from 'date-fns'
 
 export default function Dashboard() {
-  // 1. Get data from your store
+  // 2. Get data from your store
   const { user, courses = [], assignments = [], announcements = [], timetable = [], forumPosts = [] } = useStore()
 
-  // 2. SAFETY GUARD: If there is no user, show this instead of crashing
+  // 3. SAFETY GUARD: If there is no user, show loading
   if (!user) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#0F0F0F] text-white">
@@ -33,25 +34,22 @@ export default function Dashboard() {
     )
   }
 
-  // 3. Logic for the dashboard content
+  // 4. Calculations (placed inside the function, after the guard)
   const upcomingAssignments = assignments
-    .filter((a) => a.status === 'pending')
-    .filter((a) => isBefore(parseISO(a.deadline), addDays(new Date(), 7)))
+    .filter((a: any) => a.status === 'pending')
+    .filter((a: any) => isBefore(parseISO(a.deadline), addDays(new Date(), 7)))
     .slice(0, 3)
 
   const today = format(new Date(), 'EEEE')
   const todaysClasses = timetable
-    .filter((t) => t.day === today)
-    .sort((a, b) => a.startTime.localeCompare(b.startTime))
-
-  const recentAnnouncements = announcements.slice(0, 3)
-  const recentForumPosts = forumPosts.slice(0, 3)
+    .filter((t: any) => t.day === today)
+    .sort((a: any, b: any) => a.startTime.localeCompare(b.startTime))
 
   const totalCourses = courses.length
-  const completedCourses = courses.filter((c) => c.progress === 100).length
-  const pendingAssignments = assignments.filter((a) => a.status === 'pending').length
+  const completedCourses = courses.filter((c: any) => c.progress === 100).length
+  const pendingAssignments = assignments.filter((a: any) => a.status === 'pending').length
   const averageProgress = courses.length > 0
-    ? Math.round(courses.reduce((acc, c) => acc + c.progress, 0) / courses.length)
+    ? Math.round(courses.reduce((acc: number, c: any) => acc + c.progress, 0) / courses.length)
     : 0
 
   return (
@@ -59,7 +57,8 @@ export default function Dashboard() {
       {/* Welcome Section */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">
-          Welcome back, {user?.name?.split(' ')[0]}! 👋
+          {/* Added a fallback just in case name is undefined */}
+          Welcome back, {user?.full_name?.split(' ')[0] || 'Student'}! 👋
         </h2>
         <p className="text-white/60">
           Here's what's happening in your academic journey today.
