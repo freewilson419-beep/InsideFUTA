@@ -26,7 +26,7 @@ export default function Login() {
       const success = await login(email, password)
       if (success) {
         toast.success('Welcome back!')
-        navigate('/dashboard')
+        navigate('/Dashboard')
       } else {
         toast.error('Invalid credentials. Please try again.')
       }
@@ -52,7 +52,7 @@ export default function Login() {
             <div className="w-12 h-12 bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] rounded-xl flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-white">insidefuta</span>
+            <span className="text-2xl font-bold text-white">InsideFUTA</span>
           </Link>
         </div>
 
@@ -143,7 +143,7 @@ export default function Login() {
         {/* Demo credentials */}
         <div className="mt-6 text-center">
           <p className="text-white/40 text-sm">
-            Demo: Use any email and password to login
+          
           </p>
         </div>
       </div>
