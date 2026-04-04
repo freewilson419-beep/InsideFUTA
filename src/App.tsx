@@ -37,7 +37,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={session ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/signup" element={session ? <Navigate to="/dashboard" /> : <Signup />} />
-        <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/Dashboard" />} />
+        <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/dashboard" />} />
       </Routes>
     </>
   )
