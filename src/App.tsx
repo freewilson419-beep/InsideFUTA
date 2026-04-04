@@ -1,27 +1,18 @@
-import { useEffect, useState } from 'react'
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-import { supabase } from './lib/supabase' 
-import { Toaster } from './components/ui/sonner'
-
-// Import your pages
-import LandingPage from './pages/LandingPage'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import Dashboard from './pages/Dashboard'
-
 function App() {
   const [session, setSession] = useState<any>(null)
+  const [loading, setLoading] = useState(true) // 1. Add loading state
   const navigate = useNavigate()
 
   useEffect(() => {
-    // 1. Check current session on load
+    // 2. Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
+      setLoading(false) // 3. Stop loading once we check
     })
 
-    // 2. Watch for the moment they sign in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
+      setLoading(false) // 4. Ensure loading stops on changes
       if (event === 'SIGNED_IN') {
         navigate('/dashboard', { replace: true })
       }
@@ -30,18 +21,26 @@ function App() {
     return () => subscription.unsubscribe()
   }, [navigate])
 
+  // 5. DO NOT render routes until the initial check is done
+  if (loading) {
+    return (
+      <div className="h-screen w-full bg-[#0F0F0F] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#8B5CF6]"></div>
+      </div>
+    )
+  }
+
   return (
     <>
       <Toaster position="top-right" richColors />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={session ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/signup" element={session ? <Navigate to="/dashboard" /> : <Signup />} />
-        <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/login" />} />
+        {/* If logged in, /login sends you to /dashboard */}
+        <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/signup" element={session ? <Navigate to="/dashboard" replace /> : <Signup />} />
+        {/* If NOT logged in, /dashboard sends you to /login */}
+        <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/login" replace />} />
       </Routes>
     </>
   )
 }
-
-// THIS IS THE LINE THAT WAS MISSING IN YOUR SCREENSHOT
-export default App
