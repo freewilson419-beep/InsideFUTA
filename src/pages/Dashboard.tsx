@@ -1,13 +1,3 @@
-export default function Dashboard() {
-  const { user, courses = [], assignments = [], announcements = [], timetable = [], forumPosts = [] } = useStore();
-
-  // If the data isn't here yet, show a loading screen instead of crashing
-  if (!user) {
-    return <div className="h-screen bg-[#001f3f] text-white flex items-center justify-center">Loading your FUTA profile...</div>;
-  }
-
-  // ... the rest of your dashboard code ...
-}
 import { Link } from 'react-router-dom'
 import { useStore } from '@/store'
 import DashboardLayout from '@/components/layout/DashboardLayout'
