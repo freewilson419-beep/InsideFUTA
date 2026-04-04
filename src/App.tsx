@@ -1,45 +1,42 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from './lib/supabase' 
-import { Toaster } from './components/ui/sonner'
 
-import LandingPage from './pages/LandingPage'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import Dashboard from './pages/Dashboard'
+// ... keep your other imports ...
 
 function App() {
   const [session, setSession] = useState<any>(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
-    // Check if a user is already logged in when the app starts
+    // 1. Get current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
     })
 
-    // This is the magic part: it listens for the "Sign In" event
+    // 2. Listen for login/logout events
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
-      if (event === 'SIGNED_IN') {
-        navigate('/dashboard') // This physically moves the page
+      
+      // If the user just logged in and is still on the login page, move them!
+      if (session && (location.pathname === '/login' || location.pathname === '/signup')) {
+        navigate('/dashboard', { replace: true })
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [navigate])
+  }, [navigate, location.pathname])
 
   return (
-    <>
-      <Toaster position="top-right" richColors />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={session ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/signup" element={session ? <Navigate to="/dashboard" /> : <Signup />} />
-        <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/login" />} />
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      {/* If logged in, redirect away from Login/Signup */}
+      <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
+      <Route path="/signup" element={session ? <Navigate to="/dashboard" replace /> : <Signup />} />
+      
+      {/* Protect the dashboard */}
+      <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/login" replace />} />
+    </Routes>
   )
 }
-
-export default App
