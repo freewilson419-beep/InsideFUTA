@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { supabase } from './lib/supabase' // Import your real client
-import { Toaster } from '@/components/ui/sonner'
+import { supabase } from './lib/supabase' 
+import { Toaster } from './components/ui/sonner'
 
-// ... Keep all your Page imports exactly as they are ...
+// --- ADD THESE LINES HERE ---
+import LandingPage from './pages/LandingPage'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Dashboard from './pages/Dashboard'
+import Profile from './pages/Profile'
+// ----------------------------
 
 // 1. IMPROVED Protected Route component
 function ProtectedRoute({ children, session }: { children: React.ReactNode, session: any }) {
-  // If we are still checking the session, show nothing (or a spinner)
   if (session === undefined) return <div className="flex h-screen items-center justify-center bg-[#001f3f] text-white">Loading InsideFUTA...</div>
-  
-  // If no session exists, send them to login
   return session ? <>{children}</> : <Navigate to="/login" replace />
 }
+
+// ... the rest of your App() function stays exactly the same ...
 
 function App() {
   const [session, setSession] = useState<any>(undefined) // undefined means "loading"
