@@ -1,3 +1,17 @@
+export default function Dashboard() {
+  // Use empty arrays as defaults so .map() doesn't crash the app
+  const { user, courses = [], assignments = [], announcements = [], timetable = [], forumPosts = [] } = useStore()
+
+  // ADD THIS: If there is no user data yet, show a loading message
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#0F0F0F] text-white font-bold">
+        Loading your FUTA Dashboard...
+      </div>
+    )
+  }
+
+  // ... the rest of your dashboard code ...
 import { Link } from 'react-router-dom'
 import { useStore } from '@/store'
 import DashboardLayout from '@/components/layout/DashboardLayout'
