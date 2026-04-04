@@ -58,7 +58,8 @@ export default function Dashboard() {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">
           {/* Added a fallback just in case name is undefined */}
-          Welcome back, {user?.full_name?.split(' ')[0] || 'Student'}! 👋
+        // Replace that line with this:
+Welcome back, {user?.full_name ? user.full_name.trim().split(/\s+/)[0] : 'Student'}! 👋
         </h2>
         <p className="text-white/60">
           Here's what's happening in your academic journey today.
