@@ -1,20 +1,28 @@
+import { useEffect, useState } from 'react'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { supabase } from './lib/supabase' 
+import { Toaster } from './components/ui/sonner'
+
+// Import your pages
+import LandingPage from './pages/LandingPage'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Dashboard from './pages/Dashboard'
+
 function App() {
   const [session, setSession] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check initial session
+    // 1. Check current session on load
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      setLoading(false)
     })
 
+    // 2. Watch for the moment they sign in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
-      setLoading(false)
       if (event === 'SIGNED_IN') {
-        // This is what actually pushes you to the dashboard
         navigate('/dashboard', { replace: true })
       }
     })
@@ -22,19 +30,18 @@ function App() {
     return () => subscription.unsubscribe()
   }, [navigate])
 
-  if (loading) return null; // Or a spinner
-
   return (
     <>
       <Toaster position="top-right" richColors />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        {/* If session exists, kick them to dashboard from login */}
         <Route path="/login" element={session ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/signup" element={session ? <Navigate to="/dashboard" /> : <Signup />} />
         <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/login" />} />
       </Routes>
     </>
   )
 }
 
-export default App // <--- DO NOT FORGET THIS!
+// THIS MUST BE HERE TO PREVENT THE WHITE SCREEN
+export default App
