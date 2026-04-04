@@ -10,12 +10,12 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 
-// 1. Protected Route component
+// 1. Protected Route: Blocks access if not logged in
 function ProtectedRoute({ children, session }: { children: React.ReactNode, session: any }) {
   if (session === undefined) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#001f3f] text-white font-bold">
-        Verifying InsideFUTA Session...
+      <div className="flex h-screen items-center justify-center bg-[#001f3f] text-white">
+        Checking FUTA Session...
       </div>
     )
   }
@@ -27,21 +27,21 @@ function App() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // 2. Initial Session Check
+    // 2. Check if a user is already logged in when the app starts
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      // If we are already logged in and try to go to /login, push to dashboard
-      if (session && window.location.pathname === '/login') {
-        navigate('/dashboard', { replace: true })
-      }
     })
 
-    // 3. Auth Listener (This handles the redirect the moment you click Sign In)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // 3. The "Redirect Engine": Moves you to the dashboard the moment you log in
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
-      if (session) {
+      
+      if (event === 'SIGNED_IN' || session) {
+        // If we just logged in, force the browser to the dashboard
         navigate('/dashboard', { replace: true })
-      } else {
+      }
+      
+      if (event === 'SIGNED_OUT') {
         navigate('/login', { replace: true })
       }
     })
@@ -53,14 +53,14 @@ function App() {
     <>
       <Toaster position="top-right" richColors />
       <Routes>
-        {/* Public Routes */}
+        {/* Public Landing Page */}
         <Route path="/" element={<LandingPage />} />
         
-        {/* Auth Routes - Redirect if session exists */}
+        {/* Auth Pages: Redirect to dashboard if session exists */}
         <Route path="/login" element={session ? <Navigate to="/dashboard" replace /> : <Login />} />
         <Route path="/signup" element={session ? <Navigate to="/dashboard" replace /> : <Signup />} />
 
-        {/* Protected Routes */}
+        {/* Protected Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -79,7 +79,7 @@ function App() {
           }
         />
 
-        {/* Catch all */}
+        {/* Catch all back to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
