@@ -9,25 +9,25 @@ function App() {
   const navigate = useNavigate()
   const location = useLocation()
 
+ // ... Keep your imports and App function start ...
+
   useEffect(() => {
-    // 1. Get current session
+    // 1. If I refresh the page and I'm already logged in, take me to dashboard
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
+      if (session) navigate('/dashboard', { replace: true });
+    });
 
-    // 2. Listen for login/logout events
+    // 2. If I just clicked the "Sign In" button, take me to dashboard
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session)
-      
-      // If the user just logged in and is still on the login page, move them!
-      if (session && (location.pathname === '/login' || location.pathname === '/signup')) {
-        navigate('/dashboard', { replace: true })
+      if (event === 'SIGNED_IN' && session) {
+        navigate('/dashboard', { replace: true });
       }
-    })
+    });
 
-    return () => subscription.unsubscribe()
-  }, [navigate, location.pathname])
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
+// ... Keep your return statement with <Routes> ...
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
