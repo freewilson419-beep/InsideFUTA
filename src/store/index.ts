@@ -425,26 +425,40 @@ export const useStore = create<AppState>()(
       isAuthenticated: false,
 
       login: async (email: string, password: string) => {
-        // Mock login - in real app, this would call an API
-        if (email && password) {
-          set({
-            user: {
-              id: 'u1',
-              name: 'John Doe',
-              email: email,
-              matricNumber: 'FUTA/2022/001',
-              department: 'Computer Science',
-              level: '200',
-              avatar: '/images/student-emmanuel.jpg',
-              phone: '08012345678',
-              bio: 'Computer Science student passionate about programming',
-            },
-            isAuthenticated: true,
-          })
-          return true
-        }
-        return false
-      },
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      console.error("Auth Error:", error.message)
+      return false 
+    }
+
+    if (data.user) {
+      // Pulling the actual data saved during that specific user's signup
+      const { full_name, dept, level, matric } = data.user.user_metadata
+
+      set({
+        user: {
+          id: data.user.id,
+          name: full_name || 'Student',
+          email: data.user.email || '',
+          matricNumber: matric || 'N/A',
+          department: dept || 'General',
+          level: level || '100',
+          avatar: data.user.user_metadata.avatar_url || '',
+        },
+        isAuthenticated: true,
+      })
+      return true
+    }
+    return false
+  } catch (err) {
+    return false
+  }
+},
 
       signup: async (data) => {
         if (data.email && data.name) {
